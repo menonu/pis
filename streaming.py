@@ -31,7 +31,8 @@ class rsa:
         #ADCstreaming section
         self.diskPath = config.get("ADCSTREAMING","DiskPATH")
         self.diskFilenameBase = config.get("ADCSTREAMING","DiskFilenameBase")
-        self.diskMaxTime = float(config.get("ADCSTREAMING","DiskMaxTime"))
+        self.diskMaxTime = long(config.get("ADCSTREAMING","DiskMaxTime"))
+        self.diskFileCount = int(config.get("ADCSTREAMING","DiskFileCount"))
         
 
     def Connect(self):
@@ -51,7 +52,8 @@ class rsa:
         iqbw = c_double(self.iqBandwidth)
         diskpath = c_char_p(self.diskPath)
         diskfilename = c_char_p(self.diskFilenameBase)
-        maxtime = c_double(self.diskMaxTime)
+        maxtime = c_long(self.diskMaxTime)
+        maxfilecount = c_long(self.diskFileCount)
 
         self.rsa300.SetCenterFreq(cf)
         self.rsa300.SetReferenceLevel(rl)
@@ -60,6 +62,7 @@ class rsa:
         self.rsa300.SetStreamADCToDiskPath(diskpath)
         self.rsa300.SetStreamADCToDiskFilenameBase(diskfilename)
         self.rsa300.SetStreamADCToDiskMaxTime(maxtime)
+        self.rsa300.SetStreamADCToDiskMaxFileCount(maxfilecount)
 
 
         triggerMode = c_int(0) # 0 is freerun mode, 1 is triggered mode

@@ -5,7 +5,7 @@ import ctypes,ConfigParser
 from ctypes import *
 import sys,math,struct,os,subprocess,csv,numpy
 
-sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
+#sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
 
 class rsa:
     def __init__(self):
