@@ -4,6 +4,7 @@
 import ctypes,ConfigParser
 from ctypes import *
 import sys,math,struct,os,subprocess,csv,numpy
+import garmingusb
 
 #sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
 
@@ -75,17 +76,16 @@ class rsa:
                 exit(1)
         else:
             print 'Device not ready... (GetIQdata)'
-        z = [[iqData[x],iqData[x+1]] for x in xrange(self.iqRecordLength)]
+        z = [[iqData[x],iqData[x+1],gpsdevice.GetGPSData] for x in xrange(self.iqRecordLength)]
         for line in z:
             print line
-
-
-
     
     def Testfunc(self):
         print self.iqBandwidth
         
 if __name__ == "__main__":
+    gpsdevice = garmingusb.garmin()
+    gpsdevice.start()
     m = rsa()
     m.Parse()
     m.Connect()

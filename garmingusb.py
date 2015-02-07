@@ -1,15 +1,16 @@
 #!/usr/bin/python
 # coding: utf-8
 
-import sys,os,struct,pynmea,subprocess
-from multiprocessing import Process
+import sys,os,struct,pynmea,subprocess,threading,time
 from serial import Serial
 
-class garmin:
+class garmin(threading.Thread):
     def __init__(self):
-        self.out = 'initial'
+        threading.Thread.__init__(self)
+        self.setDaemon(True)
+        print "GPS starting..."
         self.com = Serial(
-          port=0,
+          port=1,
           baudrate=9600,
           bytesize=8,
           parity='N',
@@ -19,17 +20,18 @@ class garmin:
           rtscts=0,
           writeTimeout=None,
           dsrdtr=None)
+        #Initial Value
+        self.out = self.readBuffer()
+        self.GetGPSData = self.out
         if self.com.isOpen() is False:
             print "GPS Connection Error!"
             sys.exit(1)
+        print "GPS Ready"
 
-    def Run(self):
+    def run(self):
         while True:
             self.out = self.readBuffer()
-        print 'end'
-
-    def GetGPSData(self):
-        return self.out
+            self.GetGPSData = self.out
 
     def readBuffer(self):
         try:
@@ -40,17 +42,22 @@ class garmin:
             return data
 
         except Exception, e:
-            print "GPS Error!",e
+            print "GPS DataGet Error!",e
             sys.exit(1)
+
+class showg:
+    def pr(self):
+        while True:
+            print m.GetGPSData
+            time.sleep(3)
 
 
 
 
 if __name__ == "__main__":
     m = garmin()
-    p = Process(target=m.Run)
-    p.start()
-    for i in xrange(100):
-        print m.GetGPSData()
-        raw_input()
+    #p = Process(target=m.Testfunc,args=(10,))
+    m.start()
+    s = showg()
+    s.pr()
 
