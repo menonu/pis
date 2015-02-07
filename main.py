@@ -75,7 +75,7 @@ class rsa:
                 sys.stderr.write('GetIQData Error! ' + str(ret))
                 exit(1)
         else:
-            print 'Device not ready... (GetIQdata)'
+            print 'Device not ready... (GetIQdata)' + str(ret)
         z = [[iqData[x],iqData[x+1],gpsdevice.GetGPSData] for x in xrange(self.iqRecordLength)]
         for line in z:
             print line
