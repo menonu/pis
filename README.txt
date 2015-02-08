@@ -34,9 +34,10 @@ NMEA Filterの左側Basic settings をBlock everything but...
 ##パラメータ設定
 parameter.conf参照
 ##実行方法
+コマンドプロンプトより
 main.py : IQデータの取得
 streaming.py : ADC Streamingの取得
-終了 Ctrl+q
+終了 Ctrl+c
 
 
 
