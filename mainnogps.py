@@ -157,5 +157,5 @@ if __name__ == "__main__":
         print 'stopping rsa306...'
         m.rsa300.Stop()
         m.rsa300.Disconnect()
-        print 'Done. everything fine :)'
+        print 'Done. everything is fine :)'
 

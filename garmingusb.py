@@ -8,9 +8,9 @@ class garmin(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
         self.setDaemon(True)
-        print "GPS starting..."
+        print "GPS connecting..."
         self.com = Serial(
-          port=1,
+          port=0,
           baudrate=9600,
           bytesize=8,
           parity='N',
