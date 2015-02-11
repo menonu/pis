@@ -4,6 +4,7 @@
 import sys,os,struct,pynmea,subprocess,threading,time
 from serial import Serial
 
+
 class garmin(threading.Thread):
     def __init__(self):
         threading.Thread.__init__(self)
@@ -15,18 +16,21 @@ class garmin(threading.Thread):
           bytesize=8,
           parity='N',
           stopbits=1,
-          timeout=None,
+          timeout=3,
           xonxoff=0,
           rtscts=0,
-          writeTimeout=None,
+          writeTimeout=3,
           dsrdtr=None)
         #Initial Value
-        self.out = self.readBuffer()
-        self.GetGPSData = self.out
         if self.com.isOpen() is False:
             print "GPS Connection Error!"
             sys.exit(1)
         print "GPS Ready"
+        self.out = self.readBuffer()
+        if self.out == "":
+            print "GPS Connection Error!"
+            sys.exit(1)
+        self.GetGPSData = self.out
 
     def run(self):
         while True:

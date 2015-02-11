@@ -4,8 +4,10 @@
 import ctypes,ConfigParser
 from ctypes import *
 import sys,math,struct,os,subprocess,csv,numpy
+import datetime
+import garmingusb
 
-sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
+#sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
 
 class rsa:
     def __init__(self):
@@ -17,6 +19,8 @@ class rsa:
         self.searchIDs = self.intArray() 
         self.deviceserial = c_wchar_p()
         self.numFound = c_int()
+        self.time = datetime.datetime.today()
+        self.strtime = self.time.strftime("%Y%m%d%H%M%S")
 
     def Parse(self):
         config = ConfigParser.SafeConfigParser()
@@ -44,6 +48,11 @@ class rsa:
         else:
             sys.stderr.write('Connect Error! ' + str(ret))
             sys.exit(1)
+
+    def Writegps(self):
+        ff = open(self.diskPath+'\\GPS\\'+'gps'+self.strtime+'.txt','w')
+        ff.writelines(gpsdevice.GetGPSData)
+        ff.close()
 
     def Setdevice(self):
         length = c_int(self.iqRecordLength)
@@ -80,6 +89,7 @@ class rsa:
         if ret is not 0:
             sys.stderr.write('Run Error! ' + str(ret))
             exit(1)
+        print 'writing...'
         self.rsa300.Run()
         while(1):
             pass
@@ -88,11 +98,14 @@ class rsa:
         print self.iqBandwidth
         
 if __name__ == "__main__":
+    gpsdevice = garmingusb.garmin()
+    gpsdevice.start()
     m = rsa()
     m.Parse()
     m.Connect()
     try:
         m.Setdevice()
+        m.Writegps()
         m.Streaming()
         #m.Testfunc()
     except KeyboardInterrupt:

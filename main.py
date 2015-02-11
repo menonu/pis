@@ -3,26 +3,25 @@
 
 import ctypes,ConfigParser
 from ctypes import *
+from pynmea import nmea
 import sys,math,struct,os,subprocess,csv,numpy,time,string
 import datetime
 import garmingusb
 
 #sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
-
 class rsa:
     def __init__(self):
         self.libc = ctypes.windll.msvcrt
         self.fileio()
         self.rsa300 = ctypes.WinDLL("RSA300API.dll")
         self.Parse()
-        self.iqLen = self.iqRecordLength*2
-        self.floatArray = c_float * self.iqLen
         self.intArray = c_int * 10
         self.searchIDs = self.intArray() 
         self.deviceserial = c_wchar_p()
         self.numFound = c_int()
+        self.gpsstrbuff = create_string_buffer(1024) 
         self.time = datetime.datetime.today()
-        self.strtime = self.time.strftime("%Y-%m-%d-%H-%M-%S")
+        self.strtime = self.time.strftime("%Y%m%d%H%M%S")
         self.count = 0
 
     def fileio(self):
@@ -32,11 +31,12 @@ class rsa:
         self.fwrite = self.libc.fwrite
         self.fwrite.argtypes = c_void_p,c_size_t,c_size_t,c_void_p
         self.fwrite.restype = c_size_t
-
         self.fclose = self.libc.fclose
         self.fclose.argtypes = c_void_p,
         self.fclose.restype = c_int
 
+
+    #Config File Parser
     def Parse(self):
         config = ConfigParser.SafeConfigParser()
         config.read("./parameter.conf")
@@ -50,6 +50,20 @@ class rsa:
         self.iqPath = config.get("IQDATA","IQpath")
         self.iqFilenameBase = config.get("IQDATA","IQFilenameBase")
 
+    def Warn(self):
+        tmpl = '{0:20} : {1:>10g}'
+        tmpld = '{0:20} : {1:>3.2e}'
+        print '#'*36
+        print tmpl.format('ReferenceLevel',self.referenceLevel)
+        print tmpl.format('CenterFrequency',self.centerFrequency)
+        print tmpl.format('IQRecordLength',self.iqRecordLength)
+        print '#'*36
+        print 'Is that OK? (y) ',
+        tmps = raw_input()
+        if tmps is 'y' or tmps is 'Y':
+            pass
+        else:
+            exit(1)
 
     def Connect(self):
         print 'connecting...'
@@ -62,11 +76,9 @@ class rsa:
             sys.exit(1)
 
     def Setdevice(self):
-        length = c_int(self.iqRecordLength)
         rl = c_double(self.referenceLevel)
         cf = c_double(self.centerFrequency)
         iqbw = c_double(self.iqBandwidth)
-        self.rsa300.SetIQRecordLength(length)
         self.rsa300.SetCenterFreq(cf)
         self.rsa300.SetReferenceLevel(rl)
         self.rsa300.SetIQBandwidth(iqbw)
@@ -77,58 +89,110 @@ class rsa:
     def SetIQData(self):
         self.timeout = c_int(self.iqTimeout)
         self.startindex = c_int(0)
-        self.length = c_int(self.iqRecordLength)
+        self.samplerate = c_double()
+        print 'Getting device parameter'
 
         ret = self.rsa300.Run()
-        self.ShowInfo()
         if ret is not 0:
             sys.stderr.write('Run Error! ' + str(ret))
-            exit(1)
-        print 'runnning...' 
+            sys.exit(1)
+
+        self.rsa300.GetIQSampleRate(byref(self.samplerate))
+        self.iqRecordLength = int(self.samplerate.value)
+        self.length = c_int(self.iqRecordLength)
+        self.iqLen = self.iqRecordLength*2
+        self.floatArray = c_float * self.iqLen
+
+        ret = m.rsa300.Stop()
+        if ret is not 0:
+            "Device Stop Error! " + str(ret)
+            sys.exit(1)
+        self.rsa300.SetIQRecordLength(self.length)
+
+        ret = self.rsa300.Run()
+        if ret is not 0:
+            sys.stderr.write('Run Error! ' + str(ret))
+            sys.exit(1)
 
     def ShowInfo(self):
-        samplerate = c_double(10)
-        self.rsa300.GetIQSampleRate(byref(samplerate))
+        iqlength = c_long()
+        bandwidth = c_double()
+        reflevel = c_int()
+
+        #Get device setting
+        self.rsa300.GetIQRecordLength(byref(iqlength))
+        self.rsa300.GetIQBandwidth(byref(bandwidth))
+        #self.rsa300.GetReferenveLevel(byref(reflevel))
+        self.gbandwidth = bandwidth.value
+        self.giqlength = iqlength.value
+
         tmpl = '{0:20} : {1:>10g}'
         tmpld = '{0:20} : {1:>3.2e}'
         print '#'*36
         print tmpl.format('ReferenceLevel',self.referenceLevel)
         print tmpl.format('CenterFrequency',self.centerFrequency)
-        print tmpl.format('IQRecordLength',self.iqRecordLength)
-        print tmpl.format('IQSampleRate',samplerate.value)
-        print tmpl.format('IQBandwidth',self.iqBandwidth)
+        print tmpl.format('IQRecordLength',self.giqlength)
+        print tmpl.format('IQSampleRate',self.samplerate.value)
+        print tmpl.format('IQBandwidth',self.gbandwidth)
         print tmpl.format('IQTimeout',self.iqTimeout)
         print '#'*36
 
     def WriteCSV(self):
+        self.iqData = self.floatArray()
+        self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime +'.dat','ab')
         try:
             while True:
-                self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime,'ab')
                 self.GetIQData()
-                self.fclose(self.f)
         finally:
             self.fclose(self.f)
 
 
     def GetIQData(self):
         ready = c_bool(False)
-        iqData = self.floatArray()
-        ret = self.rsa300.WaitForIQDataReady(self.timeout,byref(ready))
-        if ret is not 0:
-            sys.stderr.write('WaitForIQDataReady Error! ' + str(ret))
+        #iqData = self.floatArray()
+        for i in xrange(5):
+            ret = self.rsa300.WaitForIQDataReady(self.timeout,byref(ready))
+            if ready.value is True:
+                break
+            if ret is 35:
+                print '\nIQDATA wait timeout. Retry...'
+            if ret is 36:
+                self.ReProcess()
+                sys.exit(1)
+            #35 means Timeout
+            else:
+                '\nError Code' + str(ret)
+                sys.exit(1)
+
         if ready:
-            #print 'IQData Ready'
-            ret = self.rsa300.GetIQData(iqData,self.startindex,self.length)
+            print '\r    working...',
+            self.GetGPSstring()
+            ret = self.rsa300.GetIQData(self.iqData,self.startindex,self.length)
             if ret is not 0:
                 sys.stderr.write('GetIQData Error! ' + str(ret))
-                exit(1)
+                sys.exit(1)
         else:
-            print 'Device not ready. Timeout (Check IQRecordLength)' + str(ret)
+            print 'Device not ready.' + str(ret)
             sys.exit(1)
         self.count = self.count+1
-        print '\b\b%d' % self.count
-        self.fwrite(iqData,4,self.iqLen,self.f)
-        #print 'write done'
+        print '%d captured' % self.count,
+        self.fwrite(self.gpsstrbuff,1,1024,self.f)
+        self.fwrite(self.iqData,4,self.iqLen,self.f)
+
+    def GetGPSstring(self):
+        #self.gps = nmea.GPRMC()
+        #self.gps.parse(gpsdevice.GetGPSData)
+        st = str(gpsdevice.GetGPSData).rstrip()
+        struct.pack_into('%ds' % len(st),self.gpsstrbuff,0,gpsdevice.GetGPSData)
+
+    def ReProcess(self):
+        print '#####Reconnect#####'
+        time.sleep(1)
+        m.Connect()
+        m.Setdevice()
+        m.SetIQData()
+        m.ShowInfo()
+        m.WriteCSV()
 
     def Testfunc(self):
         print self.iqBandwidth
@@ -137,14 +201,15 @@ if __name__ == "__main__":
     gpsdevice = garmingusb.garmin()
     gpsdevice.start()
     m = rsa()
+    m.Warn()
     try:
         m.Connect()
         m.Setdevice()
         m.SetIQData()
+        m.ShowInfo()
         m.WriteCSV()
-        #m.Testfunc()
     except KeyboardInterrupt:
-        print 'Aborted'
+        print '\nAborted'
     finally:
         print 'stopping rsa306...'
         m.rsa300.Stop()
