@@ -1,3 +1,4 @@
 *.r3a
 *.r3h
 *.dat
+tmp/
