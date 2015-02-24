@@ -207,7 +207,7 @@ class rsa:
         print self.iqBandwidth
         
 if __name__ == "__main__":
-    gpsdevice = garmingusb.garmin()
+    gpsdevice = garminusb.garmin()
     gpsdevice.start()
     m = rsa()
     m.Warn()

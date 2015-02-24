@@ -69,6 +69,7 @@ if __name__ == "__main__":
     m = garmin()
     #p = Process(target=m.Testfunc,args=(10,))
     m.start()
-    s = showg()
-    s.pr()
+    while True:
+        time.sleep(1)
+        print m.GetGPSData
 
