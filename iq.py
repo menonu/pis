@@ -29,10 +29,10 @@ class splitter:
         nary = numpy.fromstring(body,numpy.float32)
         bnary = nary.reshape(self.valuelen/4/2,2)
         tnary = nary.reshape(self.valuelen/4/2,2).transpose()
-        #numpy.savetxt('iq.txt',bnary,fmt='%2.2e')
-        powerary = numpy.power(tnary[0],2)+numpy.power(tnary[1],2)
-        dbary = 10*numpy.log10(powerary/50)
-        numpy.savetxt('likedbm.txt',dbary,fmt='%2.2f')
+        numpy.savetxt('iq.txt',bnary,fmt='%2.2e')
+#        powerary = numpy.power(tnary[0],2)+numpy.power(tnary[1],2)
+#        dbary = 10*numpy.log10(powerary/50)
+#        numpy.savetxt('likedbm.txt',dbary,fmt='%2.2f')
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
