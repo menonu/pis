@@ -49,11 +49,18 @@ class garmin(threading.Thread):
             print "GPS DataGet Error!",e
             sys.exit(1)
 
-class showg:
-    def pr(self):
+class streamingwrite(threading.Thread):
+    def __init__(self,gpsp,fo):
+        threading.Thread.__init__(self)
+        self.setDaemon(True)
+        self.gm = gpsp
+        self.fo = fo
+
+    def run(self):
         while True:
-            print m.GetGPSData
-            time.sleep(3)
+            with open(self.fo,'a') as f:
+                time.sleep(1)
+                f.writelines(self.gm.GetGPSData)
 
 
 

@@ -5,7 +5,7 @@ import ctypes,ConfigParser
 from ctypes import *
 import sys,math,struct,os,subprocess,csv,numpy
 import datetime
-import garmingusb
+import garminusb
 
 #sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
 
@@ -106,6 +106,8 @@ if __name__ == "__main__":
     try:
         m.Setdevice()
         m.Writegps()
+        gpsst = garmingusb.streamingwrite(gpsdevice,m.diskPath+'\\GPS\\'+'gps'+m.strtime+'.txt')
+        gpsst.start()
         m.Streaming()
         #m.Testfunc()
     except KeyboardInterrupt:

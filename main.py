@@ -6,7 +6,7 @@ from ctypes import *
 from pynmea import nmea
 import sys,math,struct,os,subprocess,csv,numpy,time,string
 import datetime
-import garmingusb
+import garminusb
 
 #sys.path.append('C:\\Program Files\\Tektronix\\RSA306\\RSA306 API')
 class rsa:
@@ -115,25 +115,25 @@ class rsa:
             sys.exit(1)
 
     def ShowInfo(self):
-        iqlength = c_long()
-        bandwidth = c_double()
-        reflevel = c_int()
+        self.giqlength = c_long()
+        self.gbandwidth = c_double()
+        self.gcenterfrequency = c_double()
+        self.greflevel = c_double()
 
         #Get device setting
-        self.rsa300.GetIQRecordLength(byref(iqlength))
-        self.rsa300.GetIQBandwidth(byref(bandwidth))
-        #self.rsa300.GetReferenveLevel(byref(reflevel))
-        self.gbandwidth = bandwidth.value
-        self.giqlength = iqlength.value
+        self.rsa300.GetIQRecordLength(byref(self.giqlength))
+        self.rsa300.GetIQBandwidth(byref(self.gbandwidth))
+        self.rsa300.GetCenterFreq(byref(self.gcenterfrequency))
+        self.rsa300.GetReferenceLevel(byref(self.greflevel))
 
         tmpl = '{0:20} : {1:>10g}'
         tmpld = '{0:20} : {1:>3.2e}'
         print '#'*36
-        print tmpl.format('ReferenceLevel',self.referenceLevel)
-        print tmpl.format('CenterFrequency',self.centerFrequency)
-        print tmpl.format('IQRecordLength',self.giqlength)
+        print tmpl.format('ReferenceLevel',self.greflevel.value)
+        print tmpl.format('CenterFrequency',self.gcenterfrequency.value)
+        print tmpl.format('IQRecordLength',self.giqlength.value)
         print tmpl.format('IQSampleRate',self.samplerate.value)
-        print tmpl.format('IQBandwidth',self.gbandwidth)
+        print tmpl.format('IQBandwidth',self.gbandwidth.value)
         print tmpl.format('IQTimeout',self.iqTimeout)
         print '#'*36
 
@@ -166,7 +166,8 @@ class rsa:
 
         if ready:
             print '\r    working...',
-            self.GetGPSstring()
+            #self.GetGPSstring()
+            self.MakeHeader()
             ret = self.rsa300.GetIQData(self.iqData,self.startindex,self.length)
             if ret is not 0:
                 sys.stderr.write('GetIQData Error! ' + str(ret))
@@ -178,6 +179,14 @@ class rsa:
         print '%d captured' % self.count,
         self.fwrite(self.gpsstrbuff,1,1024,self.f)
         self.fwrite(self.iqData,4,self.iqLen,self.f)
+
+    def MakeHeader(self):
+        self.GetGPSstring()
+        struct.pack_into('l' ,self.gpsstrbuff,512,self.giqlength.value)
+        struct.pack_into('f' ,self.gpsstrbuff,516,self.gcenterfrequency.value)
+        struct.pack_into('f' ,self.gpsstrbuff,524,self.gbandwidth.value)
+        struct.pack_into('f' ,self.gpsstrbuff,532,self.greflevel.value)
+        struct.pack_into('f' ,self.gpsstrbuff,540,self.samplerate.value)
 
     def GetGPSstring(self):
         #self.gps = nmea.GPRMC()
