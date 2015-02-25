@@ -152,7 +152,7 @@ class rsa:
 
     def GetIQData(self):
         ret = self.rsa300.Run()
-        if ret is not 0:
+        if ret != 0:
             sys.stderr.write('Run Error! ' + str(ret))
             sys.exit(1)
         ready = c_bool(False)
@@ -161,15 +161,16 @@ class rsa:
             ret = self.rsa300.WaitForIQDataReady(self.timeout,byref(ready))
             if ready.value is True:
                 break
+            #35 means Timeout
             if ret is 35:
                 print '\nIQDATA wait timeout. Retry...'
             if ret is 36:
                 self.ReProcess()
                 sys.exit(1)
-            #35 means Timeout
-            else:
-                '\nError Code' + str(ret)
+            if ret is not 0:
+                print '\nError Code ' + str(ret)
                 sys.exit(1)
+            print 'retry'
 
         if ready:
             print '\r    working...',
