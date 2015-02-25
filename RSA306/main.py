@@ -20,8 +20,8 @@ class rsa:
         self.deviceserial = c_wchar_p()
         self.numFound = c_int()
         self.gpsstrbuff = create_string_buffer(1024) 
-        self.time = datetime.datetime.today()
-        self.strtime = self.time.strftime("%Y%m%d%H%M%S")
+        self.stime = datetime.datetime.today()
+        self.strtime = self.stime.strftime("%Y%m%d%H%M%S")
         self.count = 0
 
     def fileio(self):
@@ -139,10 +139,13 @@ class rsa:
 
     def WriteCSV(self):
         self.iqData = self.floatArray()
-        self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime +'.dat','ab')
         try:
             while True:
+                self.stime = datetime.datetime.today()
+                self.strtime = self.stime.strftime("%Y%m%d%H%M%S")
+                self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime +'.dat','ab')
                 self.GetIQData()
+                self.fclose(self.f)
         finally:
             self.fclose(self.f)
 

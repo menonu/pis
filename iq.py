@@ -27,6 +27,8 @@ class splitter:
             f.seek(1024,1)
             body = f.read(self.valuelen)
         nary = numpy.fromstring(body,numpy.float32)
+        print nary
+        raw_input()
         bnary = nary.reshape(self.valuelen/4/2,2)
         tnary = nary.reshape(self.valuelen/4/2,2).transpose()
         numpy.savetxt('iq.txt',bnary,fmt='%2.2e')
