@@ -151,6 +151,10 @@ class rsa:
 
 
     def GetIQData(self):
+        ret = self.rsa300.Run()
+        if ret is not 0:
+            sys.stderr.write('Run Error! ' + str(ret))
+            sys.exit(1)
         ready = c_bool(False)
         #iqData = self.floatArray()
         for i in xrange(5):
