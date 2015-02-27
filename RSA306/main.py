@@ -20,8 +20,8 @@ class rsa:
         self.deviceserial = c_wchar_p()
         self.numFound = c_int()
         self.gpsstrbuff = create_string_buffer(1024) 
-        self.time = datetime.datetime.today()
-        self.strtime = self.time.strftime("%Y%m%d%H%M%S")
+        self.stime = datetime.datetime.today()
+        self.strtime = self.stime.strftime("%Y%m%d%H%M%S")
         self.count = 0
 
     def fileio(self):
@@ -139,30 +139,38 @@ class rsa:
 
     def WriteCSV(self):
         self.iqData = self.floatArray()
-        self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime +'.dat','ab')
         try:
             while True:
+                self.stime = datetime.datetime.today()
+                self.strtime = self.stime.strftime("%Y%m%d%H%M%S")
+                self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime +'.dat','ab')
                 self.GetIQData()
+                self.fclose(self.f)
         finally:
             self.fclose(self.f)
 
 
     def GetIQData(self):
+        ret = self.rsa300.Run()
+        if ret != 0:
+            sys.stderr.write('Run Error! ' + str(ret))
+            sys.exit(1)
         ready = c_bool(False)
         #iqData = self.floatArray()
         for i in xrange(5):
             ret = self.rsa300.WaitForIQDataReady(self.timeout,byref(ready))
             if ready.value is True:
                 break
+            #35 means Timeout
             if ret is 35:
                 print '\nIQDATA wait timeout. Retry...'
             if ret is 36:
                 self.ReProcess()
                 sys.exit(1)
-            #35 means Timeout
-            else:
-                '\nError Code' + str(ret)
+            if ret is not 0:
+                print '\nError Code ' + str(ret)
                 sys.exit(1)
+            print 'retry'
 
         if ready:
             print '\r    working...',
