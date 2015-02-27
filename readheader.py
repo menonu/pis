@@ -28,6 +28,19 @@ class readheader:
         t = f.read(8)
         b = struct.unpack('d',t)[0]
         print b
+        f.seek(3072)
+        t = f.read(8)
+        b = struct.unpack('d',t)[0]
+        print b
+        f.seek(4096)
+        f.seek(256,1)
+        t = f.read(4)
+        b = struct.unpack('i',t)[0]
+        print b
+        t = f.read(4)
+        b = struct.unpack('i',t)[0]
+        print b
+
 
 
 if __name__ == "__main__":
