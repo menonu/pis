@@ -74,6 +74,7 @@ class rsa:
         self.rsa300.SetStreamADCToDiskMaxFileCount(maxfilecount)
 
 
+
         triggerMode = c_int(0) # 0 is freerun mode, 1 is triggered mode
         self.rsa300.SetTriggerMode(triggerMode)
 
@@ -83,14 +84,12 @@ class rsa:
         timeout = c_int(self.iqTimeout)
         startindex = c_int(0)
         length = c_int(self.iqRecordLength)
-        
-
+        self.rsa300.Run()
         ret = self.rsa300.SetStreamADCToDiskEnabled(go)
         if ret is not 0:
             sys.stderr.write('Run Error! ' + str(ret))
             exit(1)
         print 'writing...'
-        self.rsa300.Run()
         while(1):
             pass
     
@@ -98,7 +97,7 @@ class rsa:
         print self.iqBandwidth
         
 if __name__ == "__main__":
-    gpsdevice = garmingusb.garmin()
+    gpsdevice = garminusb.garmin()
     gpsdevice.start()
     m = rsa()
     m.Parse()
@@ -106,7 +105,7 @@ if __name__ == "__main__":
     try:
         m.Setdevice()
         m.Writegps()
-        gpsst = garmingusb.streamingwrite(gpsdevice,m.diskPath+'\\GPS\\'+'gps'+m.strtime+'.txt')
+        gpsst = garminusb.streamingwrite(gpsdevice,m.diskPath+'\\GPS\\'+'gps'+m.strtime+'.txt')
         gpsst.start()
         m.Streaming()
         #m.Testfunc()
