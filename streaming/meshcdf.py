@@ -4,6 +4,7 @@ import sys,math,struct,os,subprocess,csv,numpy,time,string,argparse
 from collections import defaultdict
 import datetime
 import coopsplit
+import coopread
 
 class splitter:
     def __init__(self,args):
@@ -22,6 +23,8 @@ class splitter:
         for dic in meshdict:
             coopsplit.selectsplit(self.inputfile,dic,meshdict[dic])
             print dic,meshdict[dic]
+            coopread.selectread(dic,meshdict[dic])
+            print 'waiting'
             raw_input()
         
 
