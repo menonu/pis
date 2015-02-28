@@ -11,7 +11,6 @@ class readheader:
         fp = range(5)
         for i in xrange(sec):
             fp[i] = numpy.memmap('tmp'+str(i)+'.dat',dtype=numpy.float16,mode='r',shape=datalength)
-            print fp[i]
             powerlist[i][:] = fp[i][:]
         powerlist = powerlist.reshape(datalength*sec)
         histlist = numpy.histogram(powerlist[powerlist > -1000],bins=50)
@@ -20,7 +19,6 @@ class readheader:
             prob=histlist[0][i]/float(len(powerlist))
             summation = prob + summation
             print str(histlist[1][i])+','+str(prob)+','+str(summation)
-
 
 if __name__ == "__main__":
     m = readheader()
