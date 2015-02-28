@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # coding: utf-8
-import sys,math,struct,os,subprocess,csv,numpy,time,string
+import sys,math,struct,os,subprocess,csv,numpy,time,string,argparse
 import datetime
 
 class splitter:
@@ -13,12 +13,13 @@ class splitter:
         pass
 
     def run(self):
+        print self.inputfile
         with open(self.inputfile,'rb') as f:
             size = 0
             gpsblock = f.read(self.half)
             if gpsblock == "":
-                print 'fine'
-                break
+                print 'zero file'
+                sys.exit(1)
             f.seek(-512,1)
             headerblock = f.read(self.headerlen)
             gpsbuf = struct.unpack('512s',gpsblock)[0]
