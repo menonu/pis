@@ -24,8 +24,6 @@ class splitter:
             coopsplit.selectsplit(self.inputfile,dic,meshdict[dic])
             print dic,meshdict[dic]
             coopread.selectread(dic,meshdict[dic])
-            print 'waiting'
-            raw_input()
         
 
 if __name__ == "__main__":

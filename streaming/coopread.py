@@ -34,10 +34,17 @@ def selectread(dic,valuestr):
     powerlist = powerlist.reshape(datalength*num)
     histlist = numpy.histogram(powerlist[powerlist > -1000],bins=50)
     summation = 0
-    for i in range(len(histlist[0])):
-        prob=histlist[0][i]/float(len(powerlist))
-        summation = prob + summation
-        print str(histlist[1][i])+','+str(prob)+','+str(summation)
+    with open(dic+'.csv','w') as f:
+        writer = csv.writer(f)
+        for i in range(len(histlist[0])):
+            writelist = []
+            prob=histlist[0][i]/float(len(powerlist))
+            summation = prob + summation
+            writelist.append(str(histlist[1][i]))
+            writelist.append(str(prob))
+            writelist.append(str(summation))
+            writer.writerow(writelist)
+            #print str(histlist[1][i])+','+str(prob)+','+str(summation)
 
 if __name__ == "__main__":
     m = coopreader(sys.argv[1])
