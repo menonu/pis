@@ -20,7 +20,9 @@ class coopreader:
         for i in range(len(histlist[0])):
             prob=histlist[0][i]/float(len(powerlist))
             summation = prob + summation
-            print str(histlist[1][i])+','+str(prob)+','+str(summation)
+            string = str(histlist[1][i])+','+str(prob)+','+str(summation)
+            print string.rstrip()
+            #print str(histlist[1][i])+','+str(prob)+','+str(summation)
 
 def selectread(dic,valuestr):
     valuelists = map(int,valuestr)
