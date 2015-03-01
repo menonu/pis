@@ -8,6 +8,6 @@ for i in `seq 1 100`
             echo "End"
             break
         fi
-        ${binary_path}/coopread.py $duration > $2/$(($i*duration)).csv
+        ${binary_path}/coopread.py $duration > $(($i*duration)).csv
         #echo "$(($i*5))"
     done
