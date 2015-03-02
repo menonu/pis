@@ -30,9 +30,10 @@ class splitter:
         bnary = nary.reshape(self.valuelen/4/2,2)
         tnary = nary.reshape(self.valuelen/4/2,2).transpose()
         #numpy.savetxt('iq.txt',bnary,fmt='%2.2e')
-        powerary = numpy.power(tnary[0],2)+numpy.power(tnary[1],2)
-        dbary = 10*numpy.log10(powerary*1000/50)
-        numpy.savetxt(self.outputdir + '/' + date + '.txt',dbary,fmt='%2.2f')
+        powerary = (numpy.power(tnary[0],2)+numpy.power(tnary[1],2))*1000
+        avg = numpy.average(powerary)
+        print 10*numpy.log10(avg/50)
+        #dbary = 10*numpy.log10(powerary/50)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'test')

@@ -30,9 +30,16 @@ class splitter:
         bnary = nary.reshape(self.valuelen/4/2,2)
         tnary = nary.reshape(self.valuelen/4/2,2).transpose()
         #numpy.savetxt('iq.txt',bnary,fmt='%2.2e')
-        powerary = numpy.power(tnary[0],2)+numpy.power(tnary[1],2)
-        dbary = 10*numpy.log10(powerary*1000/50)
-        numpy.savetxt(self.outputdir + '/' + date + '.txt',dbary,fmt='%2.2f')
+        powerary = (numpy.power(tnary[0],2)+numpy.power(tnary[1],2))
+        powerlist = 10*numpy.log10(powerary*1000/50)
+        histlist = numpy.histogram(powerlist[powerlist > -1000],bins=50)
+        summation = 0
+        for i in range(len(histlist[0])):
+            prob=histlist[0][i]/float(len(powerlist))
+            summation = prob + summation
+            string = str(histlist[1][i])+','+str(prob)+','+str(summation)
+            print string.rstrip()
+        #dbary = 10*numpy.log10(powerary/50)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'test')
