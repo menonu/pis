@@ -20,10 +20,11 @@ class splitter:
             for line in self.csvlines:
                 meshdict[line[3]].append(line[4])
         
-        for dic in meshdict:
+        for i,dic in enumerate(meshdict):
             coopsplit.selectsplit(self.inputfile,dic,meshdict[dic])
             print dic,meshdict[dic]
             coopread.selectread(dic,meshdict[dic])
+            print str(float(i)/len(meshdict))+'% complete'
         
 
 if __name__ == "__main__":
