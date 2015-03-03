@@ -56,6 +56,7 @@ class rsa:
         print '#'*36
         print tmpl.format('ReferenceLevel',self.referenceLevel)
         print tmpl.format('CenterFrequency',self.centerFrequency)
+        print tmpl.format('IQBandwidth',self.iqBandwidth)
         print tmpl.format('IQRecordLength',self.iqRecordLength)
         print '#'*36
         print 'Is that OK? (y) ',
