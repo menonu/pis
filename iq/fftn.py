@@ -12,7 +12,8 @@ class splitter:
         self.headerlen = 1024
         self.valuelen = 112000000
         self.samplerate = 14e6
-        self.fftpoint = 4096
+        self.fftpoint = 256
+        self.targetfrequency = 760e6
         self.r = readfile
         self.start = int(sys.argv[2])
         pass
@@ -35,15 +36,16 @@ class splitter:
         zary = tnary[0]+1j*tnary[1]
         fftary = zary[self.start:self.start+self.fftpoint]
         #len(fftary)
-        specary = numpy.fft.fft(fftary,self.fftpoint)
-        
-        powerspecary = numpy.power(numpy.abs(specary)/numpy.sqrt(2),2)
+        specary = numpy.fft.fft(fftary,self.fftpoint)/self.fftpoint
+        absary = numpy.abs(specary)
+        powerspecary = numpy.power(absary,2)
         freqary = numpy.fft.fftfreq(self.fftpoint,d=1/self.samplerate)
-        shiftary = numpy.fft.fftshift(freqary)
+        shiftary = numpy.fft.fftshift(freqary)+self.targetfrequency
         powershift = numpy.fft.fftshift(powerspecary)
+        print 10*numpy.log10(numpy.sum(powershift)/50/0.001)
         #print shiftary
         #print powershift
-        powershiftdbm = 10*numpy.log10(powershift*1000/50)
+        powershiftdbm = 10*numpy.log10(powershift/50/0.001)
         outp = numpy.vstack([shiftary,powershiftdbm]).transpose()
         numpy.savetxt('spectrum.txt',outp)
 
