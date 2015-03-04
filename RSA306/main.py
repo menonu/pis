@@ -140,15 +140,8 @@ class rsa:
 
     def WriteCSV(self):
         self.iqData = self.floatArray()
-        try:
-            while True:
-                self.stime = datetime.datetime.today()
-                self.strtime = self.stime.strftime("%Y%m%d%H%M%S")
-                self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime +'.dat','ab')
-                self.GetIQData()
-                self.fclose(self.f)
-        finally:
-            self.fclose(self.f)
+        while True:
+            self.GetIQData()
 
 
     def GetIQData(self):
@@ -177,6 +170,8 @@ class rsa:
             print '\r    working...',
             #self.GetGPSstring()
             self.MakeHeader()
+            self.stime = datetime.datetime.today()
+            self.strtime = self.stime.strftime("%Y%m%d%H%M%S")
             ret = self.rsa300.GetIQData(self.iqData,self.startindex,self.length)
             if ret is not 0:
                 sys.stderr.write('GetIQData Error! ' + str(ret))
@@ -186,8 +181,12 @@ class rsa:
             sys.exit(1)
         self.count = self.count+1
         print '%d captured' % self.count,
-        self.fwrite(self.gpsstrbuff,1,1024,self.f)
-        self.fwrite(self.iqData,4,self.iqLen,self.f)
+        try:
+            self.f = self.fopen(self.iqPath+'/'+self.iqFilenameBase+self.strtime +'.dat','ab')
+            self.fwrite(self.gpsstrbuff,1,1024,self.f)
+            self.fwrite(self.iqData,4,self.iqLen,self.f)
+        finally:
+            self.fclose(self.f)
 
     def MakeHeader(self):
         self.GetGPSstring()

@@ -6,7 +6,7 @@ from signal import signal,SIGPIPE,SIG_DFL
 
 signal(SIGPIPE,SIG_DFL)
 
-class splitter:
+class scdf:
     def __init__(self,args):
         self.half = 512
         self.headerlen = 1024
@@ -38,8 +38,28 @@ class splitter:
             prob=histlist[0][i]/float(len(powerlist))
             summation = prob + summation
             string = str(histlist[1][i])+','+str(prob)+','+str(summation)
-            print string.rstrip()
+            print string
         #dbary = 10*numpy.log10(powerary/50)
+
+class cdf:
+    def __init__(self,powerlist):
+        self.powerlist = powerlist
+        if not isinstance(self.powerlist,numpy.ndarray):
+            raise(TypeError('Unsupported type'))
+
+        
+    def getcdf(self,histbin):
+        histlist = numpy.histogram(self.powerlist[self.powerlist > -1000],
+                                    bins=histbin)
+        summation = 0
+        list = []
+        for i in range(len(histlist[0])):
+            prob=histlist[0][i]/float(len(self.powerlist))
+            summation = prob + summation
+            #string = str(histlist[1][i])+','+str(prob)+','+str(summation)
+            list.append([histlist[1][i],prob,summation])
+        return list
+ 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'test')
@@ -57,7 +77,7 @@ if __name__ == "__main__":
             )
     args = parser.parse_args()
     try:
-        m = splitter(args)
+        m = scdf(args)
         m.run()
     except KeyboardInterrupt:
         pass
