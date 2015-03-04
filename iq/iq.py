@@ -7,27 +7,32 @@ import iqcdf
 
 signal(SIGPIPE,SIG_DFL)
 
-class io(object):
+class iq(object):
     def __init__(self,filename):
         self.filename = filename
         self.half = 512
         self.headerlen = 1024
         self.valuelen = 112000000
         self.samplerate = 14e6
+        self.fftpoint = 2048
+        self.targetfrequency = 760e6
+        self.blackman = numpy.blackman(self.fftpoint)
+        self.normalize = 1/numpy.average(numpy.power(self.blackman,2))
 
-    def getiqdata(self):
-        return self.read1sec()
+    def getIQData(self):
+        self.iqarray = self.readOneSecond()
 
-    def read1sec(self):
+    def readOneSecond(self,offset=0):
         with open(self.file,'rb') as f:
+            f.seek(offset)
             gpsblock = f.read(self.half)
             if gpsblock == "":
                 raise Exception(EOFError('end of file'))
             f.seek(-self.half,1)
             headerblock = f.read(self.headerlen)
             gpsbuf = struct.unpack('512s',gpsblock)[0]
-            gpsstr = gpsbuf.rstrip(' \t\r\n\0').split(',')
-            date = '20'+gpsstr[9][4:]+gpsstr[9][2:4]+gpsstr[9][0:2]+str(int(gpsstr[1][0:2])+9)+gpsstr[1][2:]
+            self.gpsstr = gpsbuf.rstrip(' \t\r\n\0').split(',')
+            self.date = '20'+gpsstr[9][4:]+gpsstr[9][2:4]+gpsstr[9][0:2]+str(int(gpsstr[1][0:2])+9)+gpsstr[1][2:]
             fformat = struct.Struct('f').unpack
             f.seek(1024,1)
             body = f.read(self.valuelen)
@@ -36,9 +41,48 @@ class io(object):
         iqarray = tnary[0]+1j*tnary[1]
         return iqarray
 
+    def gps(self):
+        return self.gpsstr
+
+    def date(self):
+        return self.date
+
+    def channelPower(self):
+        powerarray = self.psdmw()
+        sumarrays = numpy.sum(powearray,axis=1)
+        lists = self.cdf(sumarrays)
+        return lists
+
+    def psdmw(self):
+        zary = self.iqarray
+        alength = len(zary)
+        newlen = self.fftpoint*(alength/self.fftpoint)
+        psdarrays = zary[0:newlen].reshape((alength/self.fftpoint,self.fftpoint))
+        specary = numpy.fft.fft(psdarrays*self.blackman,self.fftpoint)/self.fftpoint
+        absary = numpy.abs(specary)
+        powerspecary = numpy.power(absary,2)
+        freqary = numpy.fft.fftfreq(self.fftpoint,d=1/self.samplerate)
+        shiftary = numpy.fft.fftshift(freqary)+self.targetfrequency
+        powershift = numpy.fft.fftshift(powerspecary)
+        powershiftmw = powershift*self.normalize/50.0/0.001
+        return powershiftmw
+
+    def psddbm(self):
+        powershiftmw = self.psdmw()
+        return 10*numpy.log10(powershiftmw)
+
+    def transition(self):
+        pass
+
+    def occupy(self):
+        pass
+
+    def cdf(self,powerarray):
+        return lists
+
+
 class power:
     @classmethod
-    def getchannelpower(cls,iqarray):
         targetarray = cls._checkarray_(iqarray)
 
     @classmethod
