@@ -1,5 +1,6 @@
 *.r3a
 *.r3h
 *.dat
+*.pyc
 tmp/
 /RSA306/parameter.conf

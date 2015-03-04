@@ -32,7 +32,10 @@ class splitter:
         #numpy.savetxt('iq.txt',bnary,fmt='%2.2e')
         powerary = numpy.power(tnary[0],2)+numpy.power(tnary[1],2)
         dbary = 10*numpy.log10(powerary*1000/50)
-        numpy.savetxt(self.outputdir + '/' + date + '.txt',dbary,fmt='%2.2f')
+        writebuffer = dbary.astype('str').tolist()
+        with open(self.outputdir + '/' + date + '.txt','w') as fw:
+            fw.write("\n".join(writebuffer))
+        #numpy.savetxt(self.outputdir + '/' + date + '.txt',dbary,fmt='%2.2f')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description = 'test')
